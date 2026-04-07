@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lake Alex Azaleas 2026</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .dq-row { opacity: 0.55; }
+    .dq-badge {
+      display: inline-block;
+      background: #fee2e2;
+      color: var(--red);
+      font-family: Arial, sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .pos-cell.dq { color: var(--red); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-title">
+      <div class="logo">⛳</div>
+      <h1>
+        <span>2026 Masters Tournament</span>
+        Lake Alex Azaleas
+      </h1>
+    </div>
+    <nav class="header-nav">
+      <a href="admin.html">Admin →</a>
+    </nav>
+  </div>
+</header>
+
+<div class="status-bar" id="statusBar">
+  <span class="spinner"></span> Loading leaderboard…
+</div>
+
+<main>
+  <div class="card">
+    <div class="card-header">Pool Standings</div>
+    <div id="standingsContainer">
+      <div class="empty-state">
+        <div class="icon">⛳</div>
+        <p>Loading standings…</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Scoring Rules</div>
+    <div style="padding:16px 20px; font-family:Arial,sans-serif; font-size:0.9rem; color:var(--gray-700); line-height:1.7;">
+      <ul style="padding-left:20px;">
+        <li>Each team consists of <strong>4 golfers</strong>.</li>
+        <li>Each round, the <strong>2 best (lowest) scores</strong> from your 4 golfers are summed as your team's round score.</li>
+        <li>A team must have <strong>at least 2 golfers finish the tournament</strong> to qualify. Teams with 3 or more golfers who miss the cut or withdraw are <strong>disqualified</strong>.</li>
+        <li>Lowest cumulative total after all rounds wins the pool.</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Scores sourced from ESPN / Masters.com &nbsp;·&nbsp;
+  <a href="admin.html">Admin</a> &nbsp;·&nbsp;
+  Auto-refreshes every 60 seconds
+</footer>
+
+<!-- Team detail modal -->
+<div class="modal-backdrop" id="teamModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Team Detail</h2>
+      <button class="modal-close" id="modalClose">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+let currentStandings = [];
+let refreshTimer = null;
+
+function scoreClass(toParStr) {
+  if (!toParStr || toParStr === '-') return '';
+  if (toParStr === 'E' || toParStr === '0') return 'score-even';
+  return toParStr.startsWith('-') ? 'score-under' : 'score-over';
+}
+
+function roundToPar(val) {
+  if (val == null) return null;
+  if (val === 0) return 'E';
+  return val > 0 ? `+${val}` : String(val);
+}
+
+function renderStandings(data) {
+  const { standings, lastUpdated, source, playerCount } = data;
+
+  const bar = document.getElementById('statusBar');
+  if (lastUpdated) {
+    const timeStr = new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    bar.innerHTML = playerCount > 0
+      ? `Live data via <span class="source">${source || 'ESPN'}</span> &nbsp;·&nbsp; ${playerCount} golfers &nbsp;·&nbsp; Last updated ${timeStr} &nbsp;·&nbsp; Auto-refreshes in <span id="countdown">60</span>s`
+      : `No live tournament data yet &nbsp;·&nbsp; Standings will appear when the Masters begins &nbsp;·&nbsp; Refreshing in <span id="countdown">60</span>s`;
+  }
+
+  const container = document.getElementById('standingsContainer');
+
+  if (!standings || standings.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">⛳</div><p>No teams entered yet. <a href="admin.html">Add teams in the admin page →</a></p></div>`;
+    return;
+  }
+
+  const hasScores = standings.some(s => s.roundsPlayed > 0);
+
+  let html = `<table class="standings-table"><thead><tr>
+    <th style="width:44px">Pos</th>
+    <th>Team</th>`;
+  if (hasScores) {
+    html += `<th class="num" title="Sum of 2 best scores each round">R1</th>
+             <th class="num">R2</th>
+             <th class="num">R3</th>
+             <th class="num">R4</th>
+             <th class="num">Total</th>`;
+  }
+  html += `</tr></thead><tbody>`;
+
+  standings.forEach((team, i) => {
+    const isDQ = team.isDisqualified;
+    const posLabel = isDQ ? 'DQ'
+      : team.position === '-' ? '-'
+      : (i > 0 && !standings[i-1].isDisqualified && team.totalToPar === standings[i-1].totalToPar ? 'T' + team.position : team.position);
+    const posClass = isDQ ? 'pos-cell dq' : (team.position <= 3 ? 'pos-cell top' : 'pos-cell');
+
+    const golferTagsHtml = team.golfers.map(g => {
+      let cls = 'golfer-tag';
+      if (g.status === 'CUT') cls += ' cut';
+      else if (g.status === 'WD') cls += ' wd';
+      const note = g.status === 'CUT' ? ' (CUT)' : g.status === 'WD' ? ' (WD)' : '';
+      return `<span class="${cls}">${escHtml(g.name)}${note}</span>`;
+    }).join('');
+
+    let roundCells = '';
+    if (hasScores) {
+      for (let r = 0; r < 4; r++) {
+        const rb = team.roundBests[r];
+        if (rb) {
+          const label = roundToPar(rb.sum);
+          const tip = rb.contributors.map(c => escHtml(c.name) + ' (' + roundToPar(c.score) + ')').join(', ');
+          roundCells += `<td><div class="round-score ${scoreClass(label)}" title="${tip}">${label}</div></td>`;
+        } else {
+          roundCells += `<td><div class="round-score empty">—</div></td>`;
+        }
+      }
+      roundCells += `<td class="score-cell ${scoreClass(team.toParLabel)}">${team.toParLabel}</td>`;
+    }
+
+    html += `<tr data-team-idx="${i}" class="${isDQ ? 'dq-row' : ''}">
+      <td><div class="${posClass}">${posLabel}</div></td>
+      <td>
+        <div class="owner-name">${escHtml(team.ownerName)}${isDQ ? '<span class="dq-badge">DQ</span>' : ''}</div>
+        <div class="golfers-compact">${golferTagsHtml}</div>
+      </td>
+      ${roundCells}
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+
+  container.querySelectorAll('tr[data-team-idx]').forEach(row => {
+    row.addEventListener('click', () => openTeamModal(standings[parseInt(row.dataset.teamIdx)]));
+  });
+}
+
+function openTeamModal(team) {
+  document.getElementById('modalTitle').textContent = team.ownerName + "'s Team";
+  const body = document.getElementById('modalBody');
+
+  const dqHtml = team.isDisqualified
+    ? `<div style="background:#fee2e2;color:var(--red);padding:10px 14px;border-radius:5px;font-family:Arial,sans-serif;font-size:0.88rem;margin-bottom:14px;">
+         <strong>Disqualified</strong> — fewer than 2 golfers finished the tournament
+         (${team.activeCount} active out of 4).
+       </div>`
+    : '';
+
+  const scoreHtml = team.roundsPlayed > 0
+    ? `<p style="font-family:Arial,sans-serif;font-size:0.9rem;color:var(--gray-500);margin-bottom:16px;">
+         Team Total: <strong class="${scoreClass(team.toParLabel)}" style="font-size:1.1rem;">${team.toParLabel}</strong>
+         &nbsp;through ${team.roundsPlayed} round${team.roundsPlayed > 1 ? 's' : ''}
+       </p>`
+    : `<p style="font-family:Arial,sans-serif;font-size:0.85rem;color:var(--gray-500);margin-bottom:16px;">Tournament has not started.</p>`;
+
+  // Golfer table
+  let tableHtml = `<table class="golfer-detail-table">
+    <thead><tr>
+      <th>Golfer</th><th>Pos</th>
+      <th class="mono">R1</th><th class="mono">R2</th>
+      <th class="mono">R3</th><th class="mono">R4</th>
+      <th>Total</th><th>Status</th>
+    </tr></thead><tbody>`;
+
+  team.golfers.forEach(g => {
+    const roundCells = [0,1,2,3].map(ri => {
+      const val = g.rounds[ri];
+      // Is this golfer one of the top-2 contributors for this round?
+      const isContrib = team.roundBests[ri]?.contributors?.some(c => c.name === g.name);
+      const label = val != null ? roundToPar(val) : '—';
+      const badge = isContrib ? '<span class="contributor-badge">Top 2</span>' : '';
+      const cls = isContrib ? 'score-cell ' + scoreClass(label) : (val == null ? 'empty' : '');
+      return `<td class="mono ${cls}">${label}${badge}</td>`;
+    }).join('');
+
+    const statusBadge = g.status === 'CUT' ? '<span style="color:var(--gray-500);font-size:0.8rem;">CUT</span>'
+                      : g.status === 'WD'  ? '<span style="color:var(--red);font-size:0.8rem;">WD</span>'
+                      : !g.found           ? '<span style="color:orange;font-size:0.8rem;">Not found</span>'
+                      : '<span style="color:var(--green);font-size:0.8rem;">Active</span>';
+
+    tableHtml += `<tr>
+      <td style="font-weight:bold">${escHtml(g.name)}</td>
+      <td style="font-family:Arial,sans-serif">${g.position}</td>
+      ${roundCells}
+      <td class="mono ${scoreClass(g.toParStr)}">${g.toParStr || '—'}</td>
+      <td>${statusBadge}</td>
+    </tr>`;
+  });
+
+  // Team best-2 summary row
+  const bestRow = [0,1,2,3].map(ri => {
+    const rb = team.roundBests[ri];
+    if (!rb) return '<td class="mono empty">—</td>';
+    const label = roundToPar(rb.sum);
+    const tip = rb.contributors.map(c => escHtml(c.name) + ' (' + roundToPar(c.score) + ')').join(', ');
+    return `<td class="mono score-cell ${scoreClass(label)}" title="${tip}">${label}</td>`;
+  }).join('');
+
+  tableHtml += `<tr style="background:var(--green-light);font-weight:bold">
+    <td colspan="2" style="font-family:Arial,sans-serif;font-size:0.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--green-dark)">Team Best 2 Each Round</td>
+    ${bestRow}
+    <td class="mono score-cell ${scoreClass(team.toParLabel)}">${team.toParLabel}</td>
+    <td></td>
+  </tr>`;
+
+  tableHtml += '</tbody></table>';
+  body.innerHTML = dqHtml + scoreHtml + tableHtml;
+  document.getElementById('teamModal').classList.add('open');
+}
+
+document.getElementById('modalClose').addEventListener('click', () => {
+  document.getElementById('teamModal').classList.remove('open');
+});
+document.getElementById('teamModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('teamModal'))
+    document.getElementById('teamModal').classList.remove('open');
+});
+
+async function loadStandings() {
+  try {
+    const res = await fetch('/api/standings');
+    const data = await res.json();
+    currentStandings = data.standings || [];
+    renderStandings(data);
+  } catch {
+    document.getElementById('statusBar').textContent = 'Error loading data — will retry shortly.';
+  }
+  startCountdown();
+}
+
+function startCountdown() {
+  let secs = 60;
+  clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => {
+    secs--;
+    const el = document.getElementById('countdown');
+    if (el) el.textContent = secs;
+    if (secs <= 0) { clearInterval(refreshTimer); loadStandings(); }
+  }, 1000);
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+loadStandings();
+</script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+/* ============================================================
+   Masters Pool — Global Styles
+   ============================================================ */
+:root {
+  --green:       #006747;
+  --green-dark:  #004D35;
+  --green-light: #e8f5ef;
+  --gold:        #CBA85C;
+  --gold-light:  #f5ead0;
+  --white:       #ffffff;
+  --gray-50:     #f9fafb;
+  --gray-100:    #f3f4f6;
+  --gray-200:    #e5e7eb;
+  --gray-500:    #6b7280;
+  --gray-700:    #374151;
+  --gray-900:    #111827;
+  --red:         #dc2626;
+  --radius:      8px;
+  --shadow:      0 2px 8px rgba(0,0,0,0.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Georgia', serif;
+  background: var(--gray-50);
+  color: var(--gray-900);
+  min-height: 100vh;
+}
+
+/* ---- Header ---- */
+header {
+  background: var(--green-dark);
+  color: var(--white);
+  padding: 0;
+}
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 24px 16px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo {
+  width: 52px;
+  height: 52px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+header h1 {
+  font-size: 1.75rem;
+  font-weight: normal;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+header h1 span {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: 'Arial', sans-serif;
+}
+.header-nav a {
+  color: var(--gold-light);
+  text-decoration: none;
+  font-family: Arial, sans-serif;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+.header-nav a:hover { opacity: 1; text-decoration: underline; }
+
+/* ---- Status bar ---- */
+.status-bar {
+  background: var(--green);
+  color: rgba(255,255,255,0.9);
+  font-family: Arial, sans-serif;
+  font-size: 0.78rem;
+  padding: 6px 24px;
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+.status-bar .source { color: var(--gold); font-weight: 600; }
+
+/* ---- Main content ---- */
+main {
+  max-width: 1100px;
+  margin: 32px auto;
+  padding: 0 24px;
+}
+
+/* ---- Card ---- */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+.card-header {
+  background: var(--green);
+  color: var(--white);
+  padding: 14px 20px;
+  font-family: Arial, sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* ---- Standings table ---- */
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.standings-table th {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  font-family: Arial, sans-serif;
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--gray-200);
+  white-space: nowrap;
+}
+.standings-table th.num { text-align: right; }
+.standings-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--gray-100);
+  vertical-align: top;
+}
+.standings-table tr:last-child td { border-bottom: none; }
+.standings-table tbody tr:hover { background: var(--gray-50); cursor: pointer; }
+
+/* position cell */
+.pos-cell {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--gray-500);
+  text-align: center;
+  width: 40px;
+}
+.pos-cell.top { color: var(--gold); }
+
+/* score cell */
+.score-cell {
+  font-family: 'Courier New', monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+.score-under { color: var(--red); }
+.score-over  { color: var(--gray-900); }
+.score-even  { color: var(--green); }
+
+/* owner name */
+.owner-name {
+  font-weight: bold;
+  font-size: 1rem;
+  color: var(--green-dark);
+}
+
+/* golfers list in standings */
+.golfers-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 4px;
+}
+.golfer-tag {
+  font-family: Arial, sans-serif;
+  font-size: 0.78rem;
+  color: var(--gray-700);
+  white-space: nowrap;
+}
+.golfer-tag.cut  { color: var(--gray-500); text-decoration: line-through; }
+.golfer-tag.wd   { color: var(--red); text-decoration: line-through; }
+.golfer-tag.best { color: var(--green); font-weight: 700; }
+
+/* round scores in standing row */
+.round-scores {
+  display: flex;
+  gap: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.88rem;
+}
+.round-score {
+  background: var(--gray-100);
+  border-radius: 4px;
+  padding: 2px 6px;
+  min-width: 32px;
+  text-align: center;
+  white-space: nowrap;
+}
+.round-score.best { background: var(--green-light); color: var(--green-dark); font-weight: 700; }
+.round-score.empty { color: var(--gray-500); }
+
+/* ---- Team detail modal ---- */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  width: 90%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-header {
+  background: var(--green-dark);
+  color: var(--white);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-header h2 { font-size: 1.1rem; font-weight: normal; }
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--white);
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+.modal-close:hover { color: var(--gold); }
+.modal-body { padding: 20px; }
+
+/* golfer detail table inside modal */
+.golfer-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin-top: 12px;
+}
+.golfer-detail-table th {
+  background: var(--gray-100);
+  font-family: Arial, sans-serif;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gray-700);
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 2px solid var(--gray-200);
+}
+.golfer-detail-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--gray-100);
+  font-family: Arial, sans-serif;
+}
+.golfer-detail-table tr:last-child td { border-bottom: none; }
+.golfer-detail-table .mono { font-family: 'Courier New', monospace; }
+.contributor-badge {
+  display: inline-block;
+  background: var(--green-light);
+  color: var(--green-dark);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* ---- Empty state ---- */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--gray-500);
+  font-family: Arial, sans-serif;
+}
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+/* ---- Loading spinner ---- */
+.spinner {
+  display: inline-block;
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- Admin page ---- */
+.admin-body { background: var(--gray-100); }
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  font-family: Arial, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gray-700);
+  margin-bottom: 5px;
+}
+.form-group input[type="text"],
+.form-group input[type="password"] {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 5px;
+  font-size: 0.95rem;
+  font-family: Arial, sans-serif;
+  transition: border-color 0.15s;
+}
+.form-group input:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(0,103,71,0.12);
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.btn {
+  display: inline-block;
+  padding: 9px 20px;
+  border: none;
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--green); color: var(--white); }
+.btn-primary:hover { opacity: 0.9; }
+.btn-danger  { background: var(--red);   color: var(--white); font-size: 0.8rem; padding: 5px 12px; }
+.btn-danger:hover  { opacity: 0.85; }
+.btn-secondary { background: var(--gray-200); color: var(--gray-700); font-size: 0.8rem; padding: 5px 12px; }
+.btn-secondary:hover { background: var(--gray-300,#d1d5db); }
+
+.teams-admin-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.teams-admin-table th {
+  background: var(--gray-100);
+  font-family: Arial, sans-serif;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gray-700);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 2px solid var(--gray-200);
+}
+.teams-admin-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--gray-100);
+  vertical-align: middle;
+}
+.teams-admin-table tr:last-child td { border-bottom: none; }
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--green-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.auth-box {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+  width: 340px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.auth-box h2 {
+  color: var(--green-dark);
+  margin-bottom: 6px;
+  font-size: 1.3rem;
+}
+.auth-box p {
+  color: var(--gray-500);
+  font-family: Arial, sans-serif;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+}
+.auth-error { color: var(--red); font-family: Arial, sans-serif; font-size: 0.85rem; margin-top: 10px; }
+
+.alert {
+  padding: 10px 14px;
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  font-size: 0.88rem;
+  margin-bottom: 14px;
+}
+.alert-success { background: var(--green-light); color: var(--green-dark); }
+.alert-error   { background: #fee2e2; color: var(--red); }
+
+/* ---- Footer ---- */
+footer {
+  text-align: center;
+  padding: 24px;
+  color: var(--gray-500);
+  font-family: Arial, sans-serif;
+  font-size: 0.78rem;
+}
+footer a { color: var(--green); text-decoration: none; }
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  header h1 { font-size: 1.3rem; }
+  .form-row { grid-template-columns: 1fr; }
+  .standings-table th, .standings-table td { padding: 8px 8px; }
+  .round-scores { flex-wrap: wrap; }
+}
