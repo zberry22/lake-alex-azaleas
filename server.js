@@ -211,6 +211,7 @@ function calculateStandings(teams, players) {
     const roundBests = [0, 1, 2, 3].map(ri => {
       const scored = golferData
         .filter(Boolean)
+        .filter(g => g.status === 'ACTIVE')
         .map(g => ({ name: g.name, score: g.rounds[ri] }))
         .filter(s => s.score !== null && s.score !== undefined)
         .sort((a, b) => a.score - b.score); // ascending: lowest (best) first
