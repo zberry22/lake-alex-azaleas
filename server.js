@@ -112,6 +112,8 @@ function parseESPN(data) {
       const linescores = c.linescores || [];
 
       const rounds = linescores.map(ls => {
+        // If ESPN has no value, the round was not played — ignore displayValue entirely
+        if (ls.value == null) return null;
         const dv = ls.displayValue;
         if (!dv || dv === '--' || dv === '') return null;
         return parseToPar(dv);
@@ -211,7 +213,6 @@ function calculateStandings(teams, players) {
     const roundBests = [0, 1, 2, 3].map(ri => {
       const scored = golferData
         .filter(Boolean)
-        .filter(g => g.status === 'ACTIVE')
         .map(g => ({ name: g.name, score: g.rounds[ri] }))
         .filter(s => s.score !== null && s.score !== undefined)
         .sort((a, b) => a.score - b.score); // ascending: lowest (best) first
